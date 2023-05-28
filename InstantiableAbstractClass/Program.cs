@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 
 AbstractClass instance;
 var typeHandleValue = AbstractClass.Type.TypeHandle.Value;
@@ -26,25 +27,34 @@ public abstract class AbstractClass
     public int intField = 1;
     public string stringField = "string";
 
+    public int intProperty { get; } = 100;
+    public string stringProperty { get; } = string.Empty;
+
+
     public static Type Type => typeof(AbstractClass);
 
     public AbstractClass Instance => this;
 
     protected AbstractClass() => Console.WriteLine("The abstract class constructor has worked out!");
 
-    private class InnerClass : AbstractClass { }
+    private sealed class InnerClass : AbstractClass { }
 
     public static AbstractClass GetInstance() => new InnerClass();
 
     public AbstractClass Initialize()
     {
         var innerClassInstance = new InnerClass();
-        var innerClassType = typeof(InnerClass);
 
         foreach (var field in Type.GetFields())
         {
-            var fieldValue = innerClassType.GetField(field.Name)?.GetValue(innerClassInstance);
-            field.SetValue(this, fieldValue ?? default);
+            field.SetValue(this, field.GetValue(innerClassInstance) ?? default);
+        }
+
+        foreach (var property in Type.GetProperties())
+        {
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+            var backingField = Type.GetField($"<{property.Name}>k__BackingField", bindingFlags);
+            backingField?.SetValue(this, property.GetValue(innerClassInstance));
         }
 
         return this;
