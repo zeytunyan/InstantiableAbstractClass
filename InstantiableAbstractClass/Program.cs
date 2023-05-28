@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 AbstractClass instance;
@@ -44,17 +45,13 @@ public abstract class AbstractClass
     public AbstractClass Initialize()
     {
         var innerClassInstance = new InnerClass();
+        var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
-        foreach (var field in Type.GetFields())
+        var fields = Type.GetFields(bindingFlags);
+
+        foreach (var field in fields)
         {
             field.SetValue(this, field.GetValue(innerClassInstance) ?? default);
-        }
-
-        foreach (var property in Type.GetProperties())
-        {
-            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
-            var backingField = Type.GetField($"<{property.Name}>k__BackingField", bindingFlags);
-            backingField?.SetValue(this, property.GetValue(innerClassInstance) ?? default);
         }
 
         return this;
