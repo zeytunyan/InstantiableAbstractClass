@@ -8,4 +8,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AbstractClassLibrary\AbstractClassLibrary.csproj" />
+  </ItemGroup>
+
 </Project>
